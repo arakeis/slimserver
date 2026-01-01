@@ -6,3 +6,9 @@ Cache/*
 Logs/*
 prefs/*
 Plugins/*
+.DS_Store
+CPAN/.DS_Store
+Slim/.DS_Store
+Slim/Formats/.DS_Store
+tools/push_overrides.sh
+.gitignore
