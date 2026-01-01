@@ -9,9 +9,12 @@ use URI;
 use Slim::Formats::XML;
 use Slim::Utils::Cache;
 use Slim::Utils::DateTime;
+use Slim::Utils::Log;
 use Slim::Utils::Strings qw(cstring);
 
 use Slim::Plugin::Podcast::Plugin;
+
+my $log = logger('plugin.podcast');
 
 my $cache = Slim::Utils::Cache->new;
 
@@ -29,6 +32,22 @@ sub parse {
 	# refresh precached image & more info data - keeps them up to date
 	my $feedUrl = $http->params->{params}->{url};
 	Slim::Plugin::Podcast::Plugin::precacheFeedData($feedUrl, $feed);
+
+	# Log podcast information when a new podcast is added
+	if (main::INFOLOG && $log->is_info) {
+		my $podcastTitle = $feed->{title} || 'Unknown';
+		my $podcastImage = $feed->{image} || 'None';
+		my $firstEpisodeTitle = 'None';
+		my $firstEpisodeImage = 'None';
+		
+		if ($feed->{items} && @{$feed->{items}} > 0) {
+			my $firstItem = $feed->{items}->[0];
+			$firstEpisodeTitle = $firstItem->{title} || $firstItem->{name} || 'Unknown';
+			$firstEpisodeImage = $firstItem->{image} || 'None';
+		}
+		
+		$log->info("New podcast parsed - Title: $podcastTitle, Image: $podcastImage, First episode title: $firstEpisodeTitle, First episode image: $firstEpisodeImage");
+	}
 
 	foreach my $item ( @{$feed->{items}} ) {
 		if ($item->{type} && $item->{type} eq 'link') {
